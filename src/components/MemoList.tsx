@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Memo {
   id: number;
@@ -9,9 +9,39 @@ export const MemoList = () => {
   const [memo, setMemo] = useState<string>('');
   const [memos, setMemos] = useState<Memo[]>([]);
 
+  useEffect(() => {
+    console.log("ローカルデータの取得開始");
+    const savedMemos = localStorage.getItem("memos");
+
+    if (savedMemos !== null) {
+      try {
+          const parsedMemos: Memo[] = JSON.parse(savedMemos);
+          console.log("ローカルストレージから取得したデータ:", parsedMemos);
+          if (Array.isArray(parsedMemos)) {
+            setMemos(parsedMemos);
+          } else {
+            console.warn("ローカルストレージのデータ形式が不正だったのでリセットします");
+            setMemos([]);
+          }
+      } catch (error) {
+          console.error("JSONのパースに失敗しました:", error);
+          setMemos([]);
+      // setMemos(JSON.parse(savedMemos));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("ローカルストレージに保存:", memos);
+    if (memos.length > 0) {
+    localStorage.setItem("memos", JSON.stringify(memos));
+    }
+  },[memos]);
+
   const addMemo = () => {
     if (memo.trim() === '') return;
-    setMemos([...memos, { id: Date.now(), text: memo }]);
+    const newMemos =[...memos, { id: Date.now(), text: memo }];
+    setMemos(newMemos);
     setMemo('');
   };
 
